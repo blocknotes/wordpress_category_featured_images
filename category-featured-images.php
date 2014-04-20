@@ -1,0 +1,110 @@
+<?php
+/**
+ * Plugin Name: Category Featured Images
+ * Plugin URI: https://github.com/blocknotes/wordpress_category_featured_images
+ * Description: Allows to set featured images for categories, posts without a featured image will show the category's image (Posts \ Categories \ Edit category)
+ * Version: 1.0.2
+ * Author: Mattia Roccoberton
+ * Author URI: http://blocknot.es
+ * License: GPL3
+ */
+
+// --- Actions ------------------------------------------------------------- //
+add_action( 'admin_print_scripts', 'cfi_admin_scripts' );
+add_action( 'admin_print_styles', 'cfi_admin_styles' );
+add_action( 'category_edit_form', 'cfi_category_edit_form' );
+add_action( 'edited_category', 'cfi_edited_category' );
+
+// --- Filters ------------------------------------------------------------- //
+add_filter( 'get_post_metadata', 'cfi_get_post_metadata', 10, 4 );
+
+// --- Hooks --------------------------------------------------------------- //
+register_uninstall_hook( __FILE__, 'cfi_uninstall' );
+
+// --- Functions ----------------------------------------------------------- //
+function cfi_admin_scripts()
+{
+	wp_enqueue_media();
+	wp_register_script( 'cfi-scripts', plugins_url( 'category-featured-images.js', __FILE__ ), array( 'jquery' ) );
+	wp_enqueue_script( 'cfi-scripts' );
+}
+
+function cfi_admin_styles()
+{
+	wp_register_style( 'cfi-styles', plugins_url( 'cfi-styles.css', __FILE__ ) );
+	wp_enqueue_style( 'cfi-styles' );
+}
+
+function cfi_category_edit_form()
+{
+	$tag_ID = $_GET['tag_ID'];
+	$images = get_option( 'cfi_featured_images' );
+	if( $images === FALSE ) $images = array();
+	$image = isset( $images[$tag_ID] ) ? $images[$tag_ID] : '';
+?>
+	<table class="form-table">
+		<tr class="form-field">
+			<th valign="top" scope="row">
+				<label>Featured Image</label>
+			</th>
+			<td>
+				<input id="cfi-featured-image" type="hidden" name="cfi_featured_image" readonly="readonly" value="<?php echo $image; ?>" />
+				<input id="cfi-remove-image" class="button" type="button" value="Remove image" />
+				<input id="cfi-change-image" class="button" type="button" value="Change image" />
+				<div id="cfi-thumbnail"><?php if( !empty( $image ) ) echo wp_get_attachment_image( $image ); ?></div>
+				<p class="description">Set a featured image for all the post of this category without a featured image.</p>
+			</td>
+		</tr>
+	</table>
+<?php
+}
+
+function cfi_edited_category( $term_id )
+{
+	if( isset( $_POST['cfi_featured_image'] ) )
+	{
+		$images = get_option( 'cfi_featured_images' );
+		if( $images === FALSE ) $images = array();
+		//$url = trim( $_POST['cfi_featured_image'] );	// URL alternative
+		//$images[$term_id] = !empty( $url ) ? esc_url( $url ) : NULL;
+		$img_id = trim( $_POST['cfi_featured_image'] );
+		$images[$term_id] = !empty( $img_id ) ? $img_id : NULL;
+		update_option( 'cfi_featured_images', $images );
+	}
+}
+
+function cfi_get_post_metadata( $meta_value, $object_id, $meta_key, $single )
+{
+	if( is_admin() || '_thumbnail_id' != $meta_key ) return $meta_value;
+// From: wp-includes/meta.php - get_metadata()
+	$meta_type = 'post';
+	$meta_cache = wp_cache_get($object_id, $meta_type . '_meta');
+	if( !$meta_cache )
+	{
+		$meta_cache = update_meta_cache( $meta_type, array( $object_id ) );
+		$meta_cache = $meta_cache[$object_id];
+	}
+	if( !$meta_key ) return $meta_cache;
+	if( isset($meta_cache[$meta_key]) )
+	{
+		if( $single ) return maybe_unserialize( $meta_cache[$meta_key][0] );
+		else return array_map('maybe_unserialize', $meta_cache[$meta_key]);
+	}
+	if( $single )
+	{
+	// Look for a category featured image
+		$categories = wp_get_post_categories( $object_id );
+		if( isset( $categories[0] ) )
+		{
+			$images = get_option( 'cfi_featured_images' );
+			if( $images !== FALSE && isset( $images[$categories[0]] ) ) return $images[$categories[0]];
+		}
+		return '';
+	}
+	else return array();
+}
+
+function cfi_uninstall()
+{
+	delete_option( 'cfi_featured_images' );
+}
