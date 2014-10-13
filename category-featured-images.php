@@ -3,7 +3,7 @@
  * Plugin Name: Category Featured Images
  * Plugin URI: https://github.com/blocknotes/wordpress_category_featured_images
  * Description: Allows to set featured images for categories, posts without a featured image will show the category's image (Posts \ Categories \ Edit category)
- * Version: 1.0.6
+ * Version: 1.1.0
  * Author: Mattia Roccoberton
  * Author URI: http://blocknot.es
  * License: GPL3
@@ -29,6 +29,37 @@ class category_featured_images
 		register_uninstall_hook( __FILE__, array( 'category_featured_images', 'uninstall' ) );
 	}
 
+	static function get_featured_image_url( $args )
+	{
+		$size = isset( $args['size'] ) ? $args['size'] : 'full';
+		if( is_single() )
+		{
+			$id = get_post_thumbnail_id();
+			if( !empty( $id ) )
+			{
+				$attachment = wp_get_attachment_image_src( $id, $size );
+				if( $attachment !== FALSE ) return $attachment[0];
+			}
+		}
+		else if( is_category() )
+		{
+			$categories = get_the_category();
+			if( $categories )
+			{
+				foreach( $categories as $category )
+				{
+					$images = get_option( 'cfi_featured_images' );
+					if( isset( $images[$category->term_id] ) )
+					{
+						$attachment = wp_get_attachment_image_src( $images[$category->term_id], $size );
+						if( $attachment !== FALSE ) return $attachment[0];
+					}
+				}
+			}
+		}
+		return '';
+	}
+
 	static function show_featured_image( $args )
 	{
 		if( isset( $args['size'] ) )
@@ -37,9 +68,24 @@ class category_featured_images
 			unset( $args['size'] );
 		}
 		else $size = 'thumbnail';
-		$image = get_the_post_thumbnail( null, $size, $args );
-		if( !empty( $image ) ) return '<span class="cfi-featured-image">' . $image . "</span>\n";
-		else return '';
+		if( is_single() )
+		{
+			$image = get_the_post_thumbnail( null, $size, $args );
+			if( !empty( $image ) ) return '<span class="cfi-featured-image">' . $image . '</span>';
+		}
+		else if( is_category() )
+		{
+			$categories = get_the_category();
+			if( $categories )
+			{
+				foreach( $categories as $category )
+				{
+					$images = get_option( 'cfi_featured_images' );
+					if( isset( $images[$category->term_id] ) ) return '<span class="cfi-featured-image">' . wp_get_attachment_image( $images[$category->term_id], $size ) . '</span>';
+				}
+			}
+		}
+		return '';
 	}
 
 	static function uninstall()
@@ -135,4 +181,9 @@ new category_featured_images();
 function cfi_featured_image( $args )
 {
 	echo category_featured_images::show_featured_image( $args );
+}
+
+function cfi_featured_image_url( $args )
+{
+	return category_featured_images::get_featured_image_url( $args );
 }
