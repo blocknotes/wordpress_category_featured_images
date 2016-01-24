@@ -1,5 +1,5 @@
 /**
- * Plugin Name: Category Featured Images
+ * Plugin Name: Category Featured Images (KR)
  * Author: Mattia Roccoberton
  * Author URI: http://blocknot.es
  * License: GPL3

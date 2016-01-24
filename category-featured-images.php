@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Category Featured Images
- * Plugin URI: https://github.com/blocknotes/wordpress_category_featured_images
+ * Plugin Name: Category Featured Images (KR)
+ * Plugin URI: https://github.com/karrirasinmaki/wordpress_category_featured_images/
  * Description: Allows to set featured images for categories, posts without a featured image will show the category's image (Posts \ Categories \ Edit category)
  * Author: Karri Rasinmäki
  * Author URI: http://karri.rasinmaki.fi
