@@ -176,7 +176,7 @@ class category_featured_images
 	}
 }
 
-new category_featured_images();
+$category_featured_images = new category_featured_images();
 
 function cfi_featured_image( $args )
 {
