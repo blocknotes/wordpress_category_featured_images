@@ -1,16 +1,17 @@
 <?php
 /**
  * Plugin Name: Category Featured Images
- * Plugin URI: https://github.com/karrirasinmaki/wordpress_category_featured_images/
+ * Plugin URI: https://github.com/blocknotes/wordpress_category_featured_images
  * Description: Allows to set featured images for categories, posts without a featured image will show the category's image (Posts \ Categories \ Edit category)
  * Author: Karri Rasinmäki
  * Author URI: http://karri.rasinmaki.fi
- * Version: 1.1.0.1
+ * Version: 1.1.8.1
  * License: GPL3
- * 
+ *
  * Original Author: Mattia Roccoberton
  * Original Author URI: http://blocknot.es
  * Original Plugin URI : https://github.com/blocknotes/wordpress_category_featured_images
+ *
  */
 
 class category_featured_images
@@ -36,7 +37,17 @@ class category_featured_images
 	static function get_featured_image_url( $args )
 	{
 		$size = isset( $args['size'] ) ? $args['size'] : 'full';
-		if( is_single() )
+		if( isset( $args['cat_id'] ) )
+		{
+			$cat_id = intval( $args['cat_id'] );
+			$images = get_option( 'cfi_featured_images' );
+			if( isset( $images[$cat_id] ) )
+			{
+				$attachment = wp_get_attachment_image_src( $images[$cat_id], $size );
+				if( $attachment !== FALSE ) return $attachment[0];
+			}
+		}
+		else if( is_single() )
 		{
 			$id = get_post_thumbnail_id();
 			if( !empty( $id ) )
@@ -50,12 +61,23 @@ class category_featured_images
 			$categories = get_the_category();
 			if( $categories )
 			{
+				$images = get_option( 'cfi_featured_images' );
+				$cat = NULL;
 				foreach( $categories as $category )
 				{
-					$images = get_option( 'cfi_featured_images' );
 					if( isset( $images[$category->term_id] ) )
 					{
 						$attachment = wp_get_attachment_image_src( $images[$category->term_id], $size );
+						if( $attachment !== FALSE ) return $attachment[0];
+					}
+					if( $cat === NULL ) $cat = $category;
+				}
+				if( $cat !== NULL )
+				{
+					$parent = intval( $cat->parent );
+					if( $parent > 0 && isset( $images[$parent] ) )
+					{
+						$attachment = wp_get_attachment_image_src( $images[$parent], $size );
 						if( $attachment !== FALSE ) return $attachment[0];
 					}
 				}
@@ -72,7 +94,17 @@ class category_featured_images
 			unset( $args['size'] );
 		}
 		else $size = 'thumbnail';
-		if( is_single() )
+		if( isset( $args['cat_id'] ) )
+		{
+			$cat_id = intval( $args['cat_id'] );
+			$images = get_option( 'cfi_featured_images' );
+			if( isset( $images[$cat_id] ) )
+			{
+				$img = wp_get_attachment_image( $images[$cat_id], $size );
+				if( !empty( $img ) ) return '<span class="cfi-featured-image">' . wp_get_attachment_image( $images[$cat_id], $size ) . '</span>';
+			}
+		}
+		else if( is_single() )
 		{
 			$image = get_the_post_thumbnail( null, $size, $args );
 			if( !empty( $image ) ) return '<span class="cfi-featured-image">' . $image . '</span>';
@@ -82,10 +114,17 @@ class category_featured_images
 			$categories = get_the_category();
 			if( $categories )
 			{
+				$images = get_option( 'cfi_featured_images' );
+				$cat = NULL;
 				foreach( $categories as $category )
 				{
-					$images = get_option( 'cfi_featured_images' );
 					if( isset( $images[$category->term_id] ) ) return '<span class="cfi-featured-image">' . wp_get_attachment_image( $images[$category->term_id], $size ) . '</span>';
+					if( $cat === NULL ) $cat = $category;
+				}
+				if( $cat !== NULL )
+				{
+					$parent = intval( $cat->parent );
+					if( $parent > 0 && isset( $images[$parent] ) ) return '<span class="cfi-featured-image">' . wp_get_attachment_image( $images[$parent], $size ) . '</span>';
 				}
 			}
 		}
@@ -169,11 +208,23 @@ class category_featured_images
 		{
 		// Look for a category featured image
 			$categories = wp_get_post_categories( $object_id );
-			if( isset( $categories[0] ) )
+			$images = get_option( 'cfi_featured_images' );
+			$cat = NULL;
+			foreach( $categories as $category )
 			{
-				$images = get_option( 'cfi_featured_images' );
-				if( $images !== FALSE && isset( $images[$categories[0]] ) ) return $images[$categories[0]];
+				if( isset( $images[$category] ) ) return $images[$category];
+				if( $cat === NULL ) $cat = $category;
 			}
+			if( $cat !== NULL )
+			{	// Look for the parent category image
+				$category = get_category( $cat );
+				if( !empty( $category ) && isset( $category->parent ) )
+				{
+					$parent = intval( $category->parent );
+					if( $parent > 0 && isset( $images[$parent] ) ) return $images[$parent];
+				}
+			}
+
 			return '';
 		}
 		else return array();
