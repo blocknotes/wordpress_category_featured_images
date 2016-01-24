@@ -3,11 +3,13 @@
  * Plugin Name: Category Featured Images
  * Plugin URI: https://github.com/karrirasinmaki/wordpress_category_featured_images/
  * Description: Allows to set featured images for categories, posts without a featured image will show the category's image (Posts \ Categories \ Edit category)
+ * Author: Karri Rasinmäki
+ * Author URI: http://karri.rasinmaki.fi
  * Version: 1.1.0.1
  * License: GPL3
  * 
  * Original Author: Mattia Roccoberton
- * Original Author URI: http://blocknot.es * 
+ * Original Author URI: http://blocknot.es
  * Original Plugin URI : https://github.com/blocknotes/wordpress_category_featured_images
  */
 
