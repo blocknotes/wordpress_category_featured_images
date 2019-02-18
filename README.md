@@ -1,5 +1,11 @@
-**This project is discontinued**
+# PROJECT UNMAINTAINED
 
+> *This project is not maintained anymore*
+>
+> *If you like it or continue to use it fork it please.*
+
+---
+---
 
 Category Featured Images
 ------------------------
@@ -28,3 +34,7 @@ Function example 2: cfi_featured_image_url( array( 'size' => 'large' ) );
  - Go in Posts \ Categories
  - Edit a category
  - Set the category featured image
+
+* * *
+
+My website: <https://blocknot.es/>
