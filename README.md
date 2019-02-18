@@ -1,3 +1,6 @@
+**This project is discontinued**
+
+
 Category Featured Images
 ------------------------
 A Wordpress plugin that allows to set a featured image for each category.
@@ -25,7 +28,3 @@ Function example 2: cfi_featured_image_url( array( 'size' => 'large' ) );
  - Go in Posts \ Categories
  - Edit a category
  - Set the category featured image
-
-* * *
-
-![Screenshot](http://github.com/blocknotes/wordpress_category_featured_images/raw/master/screenshot.png)
