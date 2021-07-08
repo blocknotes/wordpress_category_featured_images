@@ -1,5 +1,5 @@
 /**
- * Plugin Name: Category Featured Images
+ * Plugin Name: Category Featured Images (KR)
  * Author: Mattia Roccoberton
  * Author URI: http://blocknot.es
  * License: GPL3
@@ -23,7 +23,7 @@ jQuery(document).ready( function() {
 			button: { text: 'Choose image' },
 			multiple: false
 		});
- 
+
 	//When a file is selected, grab the URL and set it as the text field's value
 		cfi_media_upload.on( 'select', function() {
 			attachment = cfi_media_upload.state().get( 'selection' ).first().toJSON();
